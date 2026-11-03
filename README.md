@@ -178,6 +178,12 @@ What the examples show about the current changes, and what is left to refine:
    `build-snapshots.sh`. The same pull request lists bean properties in the order of their fields, which changes the
    order of the columns of `Grid(Class)`.
 
+## Spring Boot, Quarkus and native images
+
+[ECOSYSTEM.md](ECOSYSTEM.md) looks at what this work means for Spring Boot, Quarkus and GraalVM native images. Spring
+stays on the class path, Quarkus is building modular packaging and `jlink` images for Quarkus 4, and native images gain
+from dropping the run time use of AWT rather than from module descriptors.
+
 ## License
 
 Apache License 2.0, see [LICENSE](LICENSE). `02-jenesis/build/jenesis` holds the sources of
