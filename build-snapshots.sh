@@ -29,6 +29,9 @@
 #                      declares no module name
 #   SKIP_FLOW=1        do not build Flow
 #   SKIP_COMPONENTS=1  do not build Flow Components
+#   QUARKUS_VERSION    Quarkus version vaadin-quarkus is built against, for
+#                      04-quarkus (default: 4.0.0.Beta2)
+#   SKIP_QUARKUS=1     do not build vaadin-quarkus
 set -euo pipefail
 
 FLOW_SOURCE=${FLOW_SOURCE:-https://github.com/vaadin/flow.git}
@@ -40,6 +43,7 @@ ATMOSPHERE_BRANCH=${ATMOSPHERE_BRANCH:-feature/jpms-amn}
 ATMOSPHERE_VERSION=${ATMOSPHERE_VERSION:-3.0.5.slf4jvaadin1-jpms}
 RELEASED_ATMOSPHERE=3.0.5.slf4jvaadin1
 JPMS_VERSION=${JPMS_VERSION:-25.4-jpms-SNAPSHOT}
+QUARKUS_VERSION=${QUARKUS_VERSION:-4.0.0.Beta2}
 WORK_DIR=${WORK_DIR:-$HOME/.cache/vaadin-jpms-examples}
 
 MVN_FLAGS=(-B -nsu -DskipTests -Dinvoker.skip=true -Dspotless.skip=true
@@ -106,6 +110,17 @@ if [ -z "${SKIP_FLOW:-}" ]; then
     mvn "${MVN_FLAGS[@]}" install \
         -pl flow-bom,flow-server,flow-push,flow-client,flow-data,flow-html-components,flow-dnd,flow-lit-template,flow-react,flow-test-generic,flow-test-util,flow-plugins/flow-maven-plugin \
         -am
+    if [ -z "${SKIP_QUARKUS:-}" ]; then
+        # vaadin-quarkus for 04-quarkus, against Quarkus 4. CodeGenProvider
+        # takes the SmallRye Config in Quarkus 4, and the tests of the
+        # extension do not compile against it yet, so they are skipped
+        sed -i.bak 's/^import org.eclipse.microprofile.config.Config;/import io.smallrye.config.Config;/' \
+            vaadin-quarkus/deployment/src/main/java/com/vaadin/quarkus/deployment/vaadinplugin/WorkspaceInfoCollector.java
+        rm vaadin-quarkus/deployment/src/main/java/com/vaadin/quarkus/deployment/vaadinplugin/WorkspaceInfoCollector.java.bak
+        mvn "${MVN_FLAGS[@]}" -Dmaven.test.skip=true \
+            -Dquarkus.version="$QUARKUS_VERSION" install \
+            -pl vaadin-quarkus,vaadin-quarkus/runtime,vaadin-quarkus/deployment
+    fi
 fi
 
 if [ -z "${SKIP_COMPONENTS:-}" ]; then

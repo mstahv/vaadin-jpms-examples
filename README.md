@@ -9,6 +9,7 @@ and runs from the module path, built in a different way:
 | [`01-jetty`](01-jetty) | Maven | embedded Jetty, plain `java -p … -m …` |
 | [`02-jenesis`](02-jenesis) | [Jenesis](https://jenesis.build/), with `module-info.java` as the only build description and the frontend built by [`jenesis-vaadin-plugin`](jenesis-vaadin-plugin) | embedded Jetty |
 | [`03-vidocq`](03-vidocq) | Maven, a branch of [VidocqTools/vaadin-on-vidocq](https://codefloe.com/VidocqTools/vaadin-on-vidocq), as a Git submodule | the [Vidocq](https://vidocq.dev) runtime, also as a `jlink` image |
+| [`04-quarkus`](04-quarkus) | Maven, Quarkus 4.0.0.Beta2 with `quarkus-jlink` | Quarkus as a `jlink` image, which does not work yet without patches |
 
 They use Vaadin built from these branches, which are not released:
 
@@ -96,7 +97,7 @@ rm -rf ~/.m2/repository/com/vaadin/*/25.4-jpms-SNAPSHOT \
 
 ## 2. Run the examples
 
-All three serve http://localhost:8080 in production mode.
+All of them serve http://localhost:8080 in production mode.
 
 **01-jetty**: `01-jetty/run.sh` builds the application and starts it with `java -p target/modules:… -m …`.
 
@@ -120,6 +121,14 @@ cd 03-vidocq
 ./mvnw -Pjlink clean package vidocq:jlink && JDK_JAVA_OPTIONS=-Dvaadin.productionMode=true target/dist/bin/vaadin-on-vidocq
 ```
 
+**04-quarkus**: Quarkus 4 packaged with `jlink`, an attempt that documents what is left to solve. Its
+[README](04-quarkus/README.md) tells how to build, patch and run the image:
+
+```sh
+cd 04-quarkus
+mvn package && ./patch-image.sh && target/jlink-output/image/bin/jpms-example-quarkus-1.0-SNAPSHOT
+```
+
 ## Results
 
 Checked on 2026-11-03 with a browser, against `feature/jpms` at `1eff6ae6ca` and `feature/jpms-amn` of
@@ -136,6 +145,10 @@ flow-components at `e6c18200bd`. `03-vidocq` was checked again at `16d0468df7`, 
 | Workarounds | none | module name aliases, as the names are not released | none | `vauban:modularize` for the components and Atmosphere |
 
 The views show the module of each part, so the result is visible on the page.
+
+`04-quarkus` was checked on 2026-11-03 at `16d0468df7`, with Quarkus 4.0.0.Beta2. The `jlink` image starts only with
+its module descriptors patched, the Flow modules are explicit modules in it and the server round trip works, but push
+does not. The fast-jar of the same application works, push included. See [its README](04-quarkus/README.md).
 
 ## Findings
 
@@ -177,6 +190,13 @@ What the examples show about the current changes, and what is left to refine:
    make that change in `flow-server/src/main/java/module-info.java` and pass the clone as `FLOW_SOURCE` to
    `build-snapshots.sh`. The same pull request lists bean properties in the order of their fields, which changes the
    order of the columns of `Grid(Class)`.
+
+9. **Quarkus 4 can package a Vaadin application with `jlink`, but not yet without patches.** `04-quarkus` stops on
+   four problems: Quarkus takes the `META-INF/VAADIN` folder of the frontend bundle for a package, the Undertow of
+   Quarkus uses packages that its module descriptors leave private, Atmosphere does not read `jakarta.annotation`,
+   and the push script of flow-push answers 404. Push without Atmosphere,
+   [vaadin/flow#26785](https://github.com/vaadin/flow/pull/26785), would remove the last two. vaadin-quarkus also
+   needs a small change for Quarkus 4 and has no module name yet.
 
 ## Spring Boot, Quarkus and native images
 

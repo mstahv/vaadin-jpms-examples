@@ -84,8 +84,10 @@ Two details matter for libraries such as Vaadin:
   finding 8 of the [README](README.md).
 - vaadin-quarkus looks the application resources up through a `ResourceProvider` of its own, with the context class
   loader of the thread. How that works with the class loaders of the modular packaging is not tested yet.
-- Nothing of this has been tried with Vaadin on a Quarkus 4 beta yet. A fourth example, a Vaadin application packaged
-  with `quarkus-jlink`, would show where Vaadin and Undertow stand while Quarkus 4 can still be influenced.
+- [`04-quarkus`](04-quarkus) tries it on Quarkus 4.0.0.Beta2. The image starts only with patched module descriptors,
+  and push does not work: of the four problems, two are in Quarkus and two in Vaadin's use of Atmosphere. Quarkus
+  also lets every automatic module require all of `java.se`, so the image has `java.desktop` whatever flow-server
+  requires.
 
 ## GraalVM native images
 

@@ -1,0 +1,56 @@
+package com.example.jpms.quarkus;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.ListItem;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.UnorderedList;
+import com.vaadin.flow.component.react.ReactAdapterComponent;
+import com.vaadin.flow.router.Route;
+
+/**
+ * Lists the modules the application and Flow are loaded in, with their class
+ * loaders, and does a server round trip and a push from a background thread.
+ */
+@Route("")
+public class ModulesView extends Div {
+
+    public ModulesView() {
+        add(new H1("Vaadin Flow on Quarkus 4"));
+
+        UnorderedList modules = new UnorderedList();
+        modules.setId("modules");
+        for (Class<?> type : new Class<?>[] { ModulesView.class, Route.class,
+                Div.class, ReactAdapterComponent.class,
+                tools.jackson.databind.JsonNode.class }) {
+            modules.add(new ListItem(describe(type.getModule()) + ", "
+                    + type.getClassLoader()));
+        }
+        add(modules);
+
+        Paragraph result = new Paragraph();
+        result.setId("result");
+        NativeButton roundTrip = new NativeButton("Server round trip",
+                event -> result.setText("Clicked"));
+        roundTrip.setId("round-trip");
+        NativeButton push = new NativeButton("Push from a thread", event -> {
+            UI ui = event.getSource().getUI().orElseThrow();
+            Thread.ofVirtual()
+                    .start(() -> ui.access(() -> result.setText("Pushed")));
+        });
+        push.setId("push");
+        add(roundTrip, push, result);
+    }
+
+    private static String describe(Module module) {
+        if (!module.isNamed()) {
+            return "unnamed module";
+        }
+        return module.getName() + " ("
+                + (module.getDescriptor().isAutomatic() ? "automatic"
+                        : "explicit")
+                + ")";
+    }
+}
