@@ -4,7 +4,8 @@ What the module work of these examples means for the two application frameworks 
 native images. Researched in November 2026; the sources are linked in each section.
 
 In short: Spring stays on the class path and invests in the JVM's AOT cache instead. Quarkus is building modular
-packaging and `jlink` images, aiming at making them the default in Quarkus 4. Native images do not get smaller from
+packaging and `jlink` images in Quarkus 4, whose betas are out, and names its modules before it gives them descriptors,
+as these examples do. Native images do not get smaller from
 module descriptors, but they do from dropping the run time use of AWT.
 
 ## Spring Boot
@@ -50,6 +51,22 @@ Quarkus 4, is to make `jlink` a first-class packaging, eventually the default, a
 prototype ranks the sizes as _GraalVM native < jlink (modular) < fast-jar < AOT_. It treats modularizing third-party
 libraries as _"upstream responsibility; Quarkus handles them as unnamed/automatic modules"_.
 
+**Quarkus 4 is in beta.** Beta 1 came out on 1 October 2026 and
+[Beta 2](https://github.com/quarkusio/quarkus/releases/tag/4.0.0.Beta2) on 28 October, with GA planned for November
+2026 in the [July progress report](https://github.com/quarkusio/quarkus/discussions/55320), which also said full
+JPMS and `jlink` support would come _"most probably"_ with the second beta. Beta 2 has module tree shaking for `jlink`
+(#55548) and a long list of fixes that let REST, REST Client, WebSockets Next and Elytron work in a `jlink` image,
+but also open issues: an application packaged with `quarkus-jlink` failing to start, Qute with a duplicate module
+name, and Hibernate Validator missing `java.money`. The Undertow servlet support, which Vaadin uses on Quarkus, is not
+mentioned for `jlink`.
+
+**Names first, descriptors later.** The modularization epic,
+[quarkusio/quarkus#51583](https://github.com/quarkusio/quarkus/issues/51583), gives module names to the Quarkus
+components and asks the same from their dependencies, from JBoss Logging and SmallRye to Maven, before any module
+descriptors, _because Maven's transitive dependencies make automatic-module graphs larger than necessary_. Beta 2
+already _"Use[s] the module names that dependencies now provide"_ (#57066). It is the order these examples took for
+Vaadin: `Automatic-Module-Name` first, in pull requests of their own, and module descriptors on `feature/jpms`.
+
 Two details matter for libraries such as Vaadin:
 
 - _"Automatic modules are excluded from the boot set because they cannot be linked by `jlink`"_. They are loaded at
@@ -67,6 +84,8 @@ Two details matter for libraries such as Vaadin:
   finding 8 of the [README](README.md).
 - vaadin-quarkus looks the application resources up through a `ResourceProvider` of its own, with the context class
   loader of the thread. How that works with the class loaders of the modular packaging is not tested yet.
+- Nothing of this has been tried with Vaadin on a Quarkus 4 beta yet. A fourth example, a Vaadin application packaged
+  with `quarkus-jlink`, would show where Vaadin and Undertow stand while Quarkus 4 can still be influenced.
 
 ## GraalVM native images
 
