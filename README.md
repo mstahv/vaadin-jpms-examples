@@ -18,6 +18,19 @@ They use Vaadin built from these branches, which are not released:
 - `feature/jpms-amn` of vaadin/atmosphere ([vaadin/atmosphere#19](https://github.com/vaadin/atmosphere/pull/19)): the
   module name `com.vaadin.external.atmosphere.runtime` for Vaadin's Atmosphere fork.
 
+### Pull requests
+
+| Repository | Pull request | What |
+|---|---|---|
+| vaadin/flow | [#26731](https://github.com/vaadin/flow/pull/26731) | `Automatic-Module-Name` for the Flow jars, the first step of `feature/jpms` |
+| vaadin/flow | [#26721](https://github.com/vaadin/flow/pull/26721) | removes the gentyref dependency, which `feature/jpms` is based on (merged) |
+| vaadin/flow-components | [#10527](https://github.com/vaadin/flow-components/pull/10527) | `Automatic-Module-Name` for the component jars |
+| vaadin/atmosphere | [#19](https://github.com/vaadin/atmosphere/pull/19) | the module name of Vaadin's Atmosphere fork |
+| vaadin/open | [#19](https://github.com/vaadin/open/pull/19) | `Automatic-Module-Name` for `com.vaadin.open` |
+| vaadin/license-checker-vaadin10 | [#268](https://github.com/vaadin/license-checker-vaadin10/pull/268) (a private repository) | `Automatic-Module-Name` for `com.vaadin.pro.licensechecker` |
+
+`feature/jpms` itself, the module descriptors, has no pull request yet.
+
 Clone with the submodule:
 
 ```sh
