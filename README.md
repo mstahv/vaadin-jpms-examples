@@ -196,7 +196,33 @@ What the examples show about the current changes, and what is left to refine:
    Quarkus uses packages that its module descriptors leave private, Atmosphere does not read `jakarta.annotation`,
    and the push script of flow-push answers 404. Push without Atmosphere,
    [vaadin/flow#26785](https://github.com/vaadin/flow/pull/26785), would remove the last two. vaadin-quarkus also
-   needs a small change for Quarkus 4 and has no module name yet.
+   needs a small change for Quarkus 4. Its module name, `com.vaadin.quarkus`, is in
+   [vaadin/flow#26731](https://github.com/vaadin/flow/pull/26731).
+
+## To follow this autumn
+
+What is left open, and worth following or asking about while Quarkus 4 is in beta, with its GA planned for November:
+
+- **Releases of the module names**, ideally before Quarkus 4 GA, so that Vaadin enters its module graphs with stable
+  names: [vaadin/flow#26731](https://github.com/vaadin/flow/pull/26731),
+  [vaadin/flow-components#10527](https://github.com/vaadin/flow-components/pull/10527),
+  [vaadin/atmosphere#19](https://github.com/vaadin/atmosphere/pull/19), [vaadin/open#19](https://github.com/vaadin/open/pull/19)
+  and vaadin/license-checker-vaadin10#268.
+- **Quarkus, `META-INF` folders taken for packages**: whether `quarkus-jlink` keeps listing resource folders such as
+  `META-INF/VAADIN` as packages of the application module, which stops every Vaadin application from starting.
+- **Quarkus, Undertow in a `jlink` image**: whether the module descriptors of Undertow get the packages it uses, as
+  4.0.0.Beta2 did for REST, WebSockets Next and Elytron.
+- **Quarkus, static resources of other modules**: whether the servlet context of a `jlink` image serves the
+  `META-INF/resources` of library modules, which Vaadin push and probably components and themes rely on.
+- **Quarkus, `java.se` for automatic modules**: as Quarkus extensions get module names or descriptors, the image can
+  leave out `java.desktop`, which [vaadin/flow#26837](https://github.com/vaadin/flow/pull/26837) makes possible for
+  Flow.
+- **Push without Atmosphere**, [vaadin/flow#26785](https://github.com/vaadin/flow/pull/26785), or else Atmosphere
+  reading `jakarta.annotation` on the module path.
+- **vaadin-quarkus on Quarkus 4**: the `CodeGenProvider` change and its tests, when Flow moves to Quarkus 4.
+- **PWA icons**: which of [vaadin/flow#26837](https://github.com/vaadin/flow/pull/26837) and
+  [vaadin/flow#26647](https://github.com/vaadin/flow/pull/26647) carries the drawing of PWA icons out of the classes
+  every application loads, see [ECOSYSTEM.md](ECOSYSTEM.md).
 
 ## Spring Boot, Quarkus and native images
 

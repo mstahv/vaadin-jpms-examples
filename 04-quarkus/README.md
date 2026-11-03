@@ -56,8 +56,9 @@ would avoid both, and leave out an automatic module. Not tried here, as that pul
   `ModuleClassLoader` of its own. Quarkus turns their `module-info` into the `module.xml` of its module loader, with
   the same requirements and exports.
 - **Module names matter.** Quarkus warns of each artifact without a declared module name and computes one. The Vaadin
-  artifacts pass, except `com.vaadin:vaadin-quarkus` itself, which has no `Automatic-Module-Name` yet. Many Quarkus
-  extensions are still in the list in 4.0.0.Beta2.
+  artifacts pass. vaadin-quarkus was the only one without a name, and has `com.vaadin.quarkus` now, in
+  [vaadin/flow#26731](https://github.com/vaadin/flow/pull/26731) and on `feature/jpms`. Many Quarkus extensions are
+  still in the list in 4.0.0.Beta2.
 - **The whole of Java SE.** Quarkus lets every automatic module require `java.se`, which puts all of it in the image,
   `java.desktop` with AWT and its native libraries included. Atmosphere, flow-client and vaadin-quarkus are automatic
   modules, as are many Quarkus extensions, so leaving `java.desktop` out of flow-server
