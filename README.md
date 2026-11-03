@@ -24,6 +24,7 @@ They use Vaadin built from these branches, which are not released:
 |---|---|---|
 | vaadin/flow | [#26731](https://github.com/vaadin/flow/pull/26731) | `Automatic-Module-Name` for the Flow jars, the first step of `feature/jpms` |
 | vaadin/flow | [#26721](https://github.com/vaadin/flow/pull/26721) | removes the gentyref dependency, which `feature/jpms` is based on (merged) |
+| vaadin/flow | [#26837](https://github.com/vaadin/flow/pull/26837) | runs Flow without the `java.desktop` module, a related improvement for `jlink` images, see finding 8 |
 | vaadin/flow-components | [#10527](https://github.com/vaadin/flow-components/pull/10527) | `Automatic-Module-Name` for the component jars |
 | vaadin/atmosphere | [#19](https://github.com/vaadin/atmosphere/pull/19) | the module name of Vaadin's Atmosphere fork |
 | vaadin/open | [#19](https://github.com/vaadin/open/pull/19) | `Automatic-Module-Name` for `com.vaadin.open` |
@@ -167,6 +168,15 @@ What the examples show about the current changes, and what is left to refine:
 7. **Not related to the module path:** in the `jlink` image of `03-vidocq`, the theme stylesheet `aura/aura.css`
    answers 404. Vidocq's servlet container serves no `META-INF/resources` from the modules of an image. The same
    happens with the released Vaadin.
+8. **A `jlink` image of a Flow application carries `java.desktop`**, which is about a quarter of an image: AWT, Swing,
+   `java.beans` and their native libraries, with `java.prefs` and `java.datatransfer`. Flow needs it only for PWA icons
+   drawn at run time, but could not start without it, because classes every application loads refer to `java.beans`
+   and AWT. [vaadin/flow#26837](https://github.com/vaadin/flow/pull/26837) removes those references. On top of
+   `feature/jpms`, with flow-server requiring `java.desktop` as `requires static`, the `jlink` image of `03-vidocq`
+   shrank from 71.2 MB to 55.8 MB and runs without the module. To try it, merge the pull request into `feature/jpms`,
+   make that change in `flow-server/src/main/java/module-info.java` and pass the clone as `FLOW_SOURCE` to
+   `build-snapshots.sh`. The same pull request lists bean properties in the order of their fields, which changes the
+   order of the columns of `Grid(Class)`.
 
 ## License
 
