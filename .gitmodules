@@ -1,0 +1,4 @@
+[submodule "03-vidocq"]
+	path = 03-vidocq
+	url = https://codefloe.com/mstahv/vaadin-on-vidocq.git
+	branch = feature/vaadin-jpms

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!--
+    A Jenesis build plugin that builds the Vaadin frontend of a module, with
+    the code the Vaadin Maven and Gradle plugins share (flow-plugin-base).
+    Jenesis loads a plugin named by Maven coordinates with its dependencies
+    on a class path of its own.
+  -->
+  <groupId>com.example.jpms</groupId>
+  <artifactId>jenesis-vaadin-plugin</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <name>Vaadin frontend build for Jenesis</name>
+
+  <properties>
+    <!-- The Jenesis API is compiled for Java 25 -->
+    <maven.compiler.release>25</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Built from the JPMS branch of Flow by ../build-snapshots.sh -->
+    <flow.version>25.4-jpms-SNAPSHOT</flow.version>
+    <jenesis.version>0.18.1</jenesis.version>
+  </properties>
+
+  <dependencies>
+    <!-- Not provided: Jenesis calls a plugin through the copy of its API in
+         the plugin's own class loader -->
+    <dependency>
+      <groupId>build.jenesis</groupId>
+      <artifactId>build.jenesis</artifactId>
+      <version>${jenesis.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-plugin-base</artifactId>
+      <version>${flow.version}</version>
+    </dependency>
+    <!-- The client engine is needed by the frontend build only, so the
+         plugin brings it rather than the application, see vaadin/flow#25882 -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-client</artifactId>
+      <version>${flow.version}</version>
+    </dependency>
+    <!-- The frontend build logs through slf4j -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>2.0.17</version>
+    </dependency>
+  </dependencies>
+</project>
