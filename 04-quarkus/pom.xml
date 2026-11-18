@@ -13,7 +13,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Test the published extension against Quarkus 4; see README.md. -->
     <flow.version>25.4.0-beta1</flow.version>
-    <quarkus.version>4.0.0.Beta2</quarkus.version>
+    <quarkus.version>4.0.0.CR1</quarkus.version>
   </properties>
 
   <dependencyManagement>

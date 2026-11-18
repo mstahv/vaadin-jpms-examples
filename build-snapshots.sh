@@ -30,7 +30,7 @@
 #   SKIP_FLOW=1        do not build Flow
 #   SKIP_COMPONENTS=1  do not build Flow Components
 #   QUARKUS_VERSION    Quarkus version vaadin-quarkus is built against, for
-#                      04-quarkus (default: 4.0.0.Beta2)
+#                      04-quarkus (default: 4.0.0.CR1)
 #   SKIP_QUARKUS=1     do not build vaadin-quarkus
 set -euo pipefail
 
@@ -43,7 +43,7 @@ ATMOSPHERE_BRANCH=${ATMOSPHERE_BRANCH:-feature/jpms-amn}
 ATMOSPHERE_VERSION=${ATMOSPHERE_VERSION:-3.0.5.slf4jvaadin1-jpms}
 RELEASED_ATMOSPHERE=3.0.5.slf4jvaadin1
 JPMS_VERSION=${JPMS_VERSION:-25.4-jpms-SNAPSHOT}
-QUARKUS_VERSION=${QUARKUS_VERSION:-4.0.0.Beta2}
+QUARKUS_VERSION=${QUARKUS_VERSION:-4.0.0.CR1}
 WORK_DIR=${WORK_DIR:-$HOME/.cache/vaadin-jpms-examples}
 
 MVN_FLAGS=(-B -nsu -DskipTests -Dinvoker.skip=true -Dspotless.skip=true

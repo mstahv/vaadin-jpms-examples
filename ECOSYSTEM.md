@@ -51,7 +51,8 @@ Quarkus 4, is to make `jlink` a first-class packaging, eventually the default, a
 prototype ranks the sizes as _GraalVM native < jlink (modular) < fast-jar < AOT_. It treats modularizing third-party
 libraries as _"upstream responsibility; Quarkus handles them as unnamed/automatic modules"_.
 
-**Quarkus 4 is in beta.** Beta 1 came out on 1 October 2026 and
+**Quarkus 4 has a release candidate.** [CR1](https://github.com/quarkusio/quarkus/releases/tag/4.0.0.CR1)
+came out on 11 November 2026. Beta 1 came out on 1 October 2026 and
 [Beta 2](https://github.com/quarkusio/quarkus/releases/tag/4.0.0.Beta2) on 28 October, with GA planned for November
 2026 in the [July progress report](https://github.com/quarkusio/quarkus/discussions/55320), which also said full
 JPMS and `jlink` support would come _"most probably"_ with the second beta. Beta 2 has module tree shaking for `jlink`
@@ -84,7 +85,7 @@ Two details matter for libraries such as Vaadin:
   finding 8 of the [README](README.md).
 - vaadin-quarkus looks the application resources up through a `ResourceProvider` of its own, with the context class
   loader of the thread. How that works with the class loaders of the modular packaging is not tested yet.
-- [`04-quarkus`](04-quarkus) tries it on Quarkus 4.0.0.Beta2. The image starts only with patched module descriptors,
+- [`04-quarkus`](04-quarkus) now tries it on Quarkus 4.0.0.CR1. The image starts only with patched module descriptors,
   and push does not work: of the four problems, two are in Quarkus and two in Vaadin's use of Atmosphere. Quarkus
   also lets every automatic module require all of `java.se`, so the image has `java.desktop` whatever flow-server
   requires.

@@ -1,13 +1,13 @@
 # Vaadin on Quarkus 4, packaged with jlink
 
-A Vaadin Flow application on [Quarkus](https://quarkus.io) 4.0.0.Beta2, packaged with the experimental
+A Vaadin Flow application on [Quarkus](https://quarkus.io) 4.0.0.CR1, packaged with the experimental
 [`quarkus-jlink`](https://quarkus.io/guides/jlink) extension into a runtime image that contains the JDK modules and
 the application modules it needs. Quarkus 4 is to make this packaging first class, see
 [ECOSYSTEM.md](../ECOSYSTEM.md).
 
 **It does not work yet.** The image builds, but starts only after [`patch-image.sh`](patch-image.sh) has patched the
 module descriptors Quarkus generated, and push still fails then. Each patch is a problem to solve, in Quarkus or in
-Vaadin, and they are listed below. As a fast-jar, the same application works on Quarkus 4.0.0.Beta2.
+Vaadin, and they are listed below. As a fast-jar, the same application works on Quarkus 4.0.0.CR1.
 
 ## Published beta: 25.4.0-beta1
 
@@ -19,6 +19,17 @@ stays blank. The fast-jar passes browser server-round-trip and long-polling push
 
 The beta's Vaadin jars declare automatic module names, not explicit descriptors. The description of explicit
 Flow modules below records the earlier `feature/jpms` experiment; it does not describe the published beta.
+
+## Quarkus 4.0.0.CR1 check
+
+Updated to [4.0.0.CR1](https://github.com/quarkusio/quarkus/releases/tag/4.0.0.CR1) and checked on 2026-11-18
+with JDK 25. `mvn clean package` succeeds with both the locally installed `25.4-jpms-SNAPSHOT` artifacts
+(on `main`) and published Vaadin `25.4.0-beta1` (on `test/vaadin-25.4.0-beta1`). The fast-jar passes browser
+server-round-trip and long-polling push checks in both cases.
+
+The jlink limitations remain: an unpatched image fails on `META-INF.VAADIN.config: Invalid package name`.
+The existing `patch-image.sh` lets both images start and serve the index with HTTP 200, but the push script
+still returns 404. The Beta2 findings below remain relevant; CR1 does not remove these workarounds.
 
 ## Run it
 
