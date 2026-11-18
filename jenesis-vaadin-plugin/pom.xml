@@ -17,8 +17,8 @@
     <!-- The Jenesis API is compiled for Java 25 -->
     <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- Built from the JPMS branch of Flow by ../build-snapshots.sh -->
-    <flow.version>25.4-jpms-SNAPSHOT</flow.version>
+    <!-- Published beta: no locally built Vaadin artifacts required. -->
+    <flow.version>25.4.0-beta1</flow.version>
     <jenesis.version>0.18.1</jenesis.version>
   </properties>
 

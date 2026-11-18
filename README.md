@@ -11,7 +11,79 @@ and runs from the module path, built in a different way:
 | [`03-vidocq`](03-vidocq) | Maven, a branch of [VidocqTools/vaadin-on-vidocq](https://codefloe.com/VidocqTools/vaadin-on-vidocq), as a Git submodule | the [Vidocq](https://vidocq.dev) runtime, also as a `jlink` image |
 | [`04-quarkus`](04-quarkus) | Maven, Quarkus 4.0.0.Beta2 with `quarkus-jlink` | Quarkus as a `jlink` image, which does not work yet without patches |
 
-They use Vaadin built from these branches, which are not released:
+## Published beta experiment: 25.4.0-beta1
+
+This branch uses **25.4.0-beta1 from Maven Central**, without running `build-snapshots.sh`.
+The Jetty, Jenesis plugin and Quarkus POMs, and the Jenesis module pins, select that version.
+`03-vidocq` remains an unchanged Git submodule: [`vidocq-mvn.sh`](vidocq-mvn.sh) passes
+`-Dflow.version=25.4.0-beta1` to its Maven build. The application/plugin versions and Vidocq itself still use
+SNAPSHOT versions; no Vaadin JPMS snapshot is needed.
+
+Checked on 2026-11-18 with JDK 25, Maven 3.10.0 and Chromium. Jetty is still 12.1.14, Quarkus is still
+4.0.0.Beta2, and the Vidocq submodule is at `29f6b083848e7999313bc033afe5b86bb61a7e05`.
+
+| Example | Build | Runtime result with the beta |
+|---|---|---|
+| `01-jetty` | Pass, after adding Jackson and jsoup requirements | Browser view, server round trip and long-polling push pass |
+| `02-jenesis` | Pass, after requiring and pinning Jackson | Browser view, server round trip, push and Vaadin Button pass |
+| `03-vidocq` package | Pass | Default layering returns HTTP 500: `Unable to find index.html`; building with `-Dvidocq.app.layer=all` restores the browser view and server round trip |
+| `03-vidocq` jlink | Pass, Vauban generates descriptors for Flow too | Starts, but requesting the view fails: `AppShell: module com.vaadin.flow.server does not declare uses` |
+| `04-quarkus` jlink | Pass with the published extension | Unpatched image fails on `META-INF.VAADIN.config: Invalid package name`; existing `patch-image.sh` lets it start, but the push script still returns 404 and the view stays blank |
+| `04-quarkus` fast-jar | Pass | Browser view, server round trip and push pass, on the class path |
+
+The useful improvement is **stable published module names**. The tested Flow jars, component jars and
+`vaadin-quarkus` have `Automatic-Module-Name`, matching the names used by these examples. They have no
+`module-info.class`: Jetty and Jenesis show the application as explicit and Flow as automatic. The beta still
+uses Atmosphere `3.0.5.slf4jvaadin1`, without a declared module name.
+
+That is enough to run the two Jetty applications using released Vaadin artifacts. It does not replace the
+explicit descriptors and runtime fixes of `feature/jpms`:
+
+- `01-jetty` needs `requires tools.jackson.databind` to compile its diagnostic view, and `requires org.jsoup`
+  to start. Automatic Flow does not bring those explicit modules into the graph through transitive requirements.
+- `02-jenesis` also needs the Jackson requirement, pinned to Flow's `3.1.8` to avoid resolving both it and the
+  index's newer Jackson. Jenesis already launches with `--add-modules ALL-MODULE-PATH,ALL-DEFAULT`.
+  The local frontend plugin builds unchanged against the beta. Aliases are retained to avoid depending on when
+  the module index indexes the beta.
+- The separate-layer resource lookup and dynamic service lookup fixes are still missing in the tested Vidocq
+  paths. The ordinary package works with the old `vidocq.app.layer=all` build setting. Its jlink image still
+  includes `java.desktop`, `java.prefs` and `java.datatransfer`.
+- Quarkus can build and run the published extension in these tests without rebuilding it against Quarkus 4.
+  This does not resolve its jlink resource and module-access problems.
+
+Run the beta examples (one at a time, since they default to port 8080):
+
+```sh
+01-jetty/run.sh
+
+(cd jenesis-vaadin-plugin && mvn clean install)
+(cd 02-jenesis && java build/jenesis/Execute.java)
+
+./vidocq-mvn.sh clean package vidocq:package
+03-vidocq/target/vaadin-on-vidocq-0.4.0-SNAPSHOT/bin/vaadin-on-vidocq.sh
+# The default package reproduces the index.html failure above.
+
+# Working package: put Flow and the application in the same layer.
+# This is a Maven build setting, not just a JVM option. Clean when changing the layout.
+./vidocq-mvn.sh -Dvidocq.app.layer=all clean package vidocq:package
+03-vidocq/target/vaadin-on-vidocq-0.4.0-SNAPSHOT/bin/vaadin-on-vidocq.sh
+
+./vidocq-mvn.sh -Pjlink clean package vidocq:jlink
+JDK_JAVA_OPTIONS=-Dvaadin.productionMode=true 03-vidocq/target/dist/bin/vaadin-on-vidocq
+# The image reproduces the AppShell uses failure above.
+
+(cd 04-quarkus && mvn clean package && ./patch-image.sh && \
+  target/jlink-output/image/bin/jpms-example-quarkus-1.0-SNAPSHOT)
+# Push is still broken in this image. The same build also produces the working fast-jar:
+(cd 04-quarkus && java -jar target/quarkus-app/quarkus-run.jar)
+```
+
+## Original JPMS snapshot experiments
+
+The remaining sections record the original snapshot setup and its results, for comparison. They are not the
+setup instructions or results for this beta branch. Use the commands above for 25.4.0-beta1.
+
+The original experiments used Vaadin built from these branches:
 
 - `feature/jpms` of vaadin/flow: module descriptors for flow-server, flow-data, flow-html-components, flow-dnd,
   flow-lit-template, flow-react and flow-push, and `Automatic-Module-Name` for the other Flow jars.

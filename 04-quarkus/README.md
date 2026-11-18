@@ -9,11 +9,21 @@ the application modules it needs. Quarkus 4 is to make this packaging first clas
 module descriptors Quarkus generated, and push still fails then. Each patch is a problem to solve, in Quarkus or in
 Vaadin, and they are listed below. As a fast-jar, the same application works on Quarkus 4.0.0.Beta2.
 
+## Published beta: 25.4.0-beta1
+
+This branch uses the published Flow and vaadin-quarkus artifacts. Checked on 2026-11-18 with JDK 25 and the
+same Quarkus 4.0.0.Beta2: `mvn clean package` builds both the image and the fast-jar without locally rebuilding
+vaadin-quarkus. The image still fails on `META-INF.VAADIN.config: Invalid package name`. The existing
+`patch-image.sh` lets it start, but `VAADIN/static/push/vaadinPush-min.js` still returns 404 and the browser view
+stays blank. The fast-jar passes browser server-round-trip and long-polling push checks.
+
+The beta's Vaadin jars declare automatic module names, not explicit descriptors. The description of explicit
+Flow modules below records the earlier `feature/jpms` experiment; it does not describe the published beta.
+
 ## Run it
 
-Requirements: JDK 25 (`quarkus-jlink` needs it), Maven, and Flow and vaadin-quarkus at `25.4-jpms-SNAPSHOT` in the local
-Maven repository, built by [`../build-snapshots.sh`](../build-snapshots.sh), which builds vaadin-quarkus against
-Quarkus 4.0.0.Beta2.
+Requirements: JDK 25 (`quarkus-jlink` needs it) and Maven. The POM selects published Vaadin `25.4.0-beta1`;
+`build-snapshots.sh` is not needed.
 
 ```sh
 mvn package                        # builds the frontend and the image, target/jlink-output/image
@@ -27,11 +37,11 @@ Without `@Push` in `AppShell`, the view shows each module and its class loader, 
 The fast-jar for comparison, which works with push:
 
 ```sh
-mvn package -Dquarkus.jlink.enabled=false
+mvn package
 java -jar target/quarkus-app/quarkus-run.jar
 ```
 
-## What it takes
+## Original snapshot findings
 
 vaadin-quarkus did not compile against Quarkus 4: `CodeGenProvider.shouldRun` takes the SmallRye `Config` instead of the
 MicroProfile one. `build-snapshots.sh` changes the import, and skips the tests of the extension, which do not compile

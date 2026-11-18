@@ -11,9 +11,8 @@
     <!-- quarkus-jlink needs Java 25 -->
     <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- Built from the JPMS branch of Flow by ../build-snapshots.sh. vaadin-quarkus
-         is built against Quarkus 4 by the same script, see README.md -->
-    <flow.version>25.4-jpms-SNAPSHOT</flow.version>
+    <!-- Test the published extension against Quarkus 4; see README.md. -->
+    <flow.version>25.4.0-beta1</flow.version>
     <quarkus.version>4.0.0.Beta2</quarkus.version>
   </properties>
 

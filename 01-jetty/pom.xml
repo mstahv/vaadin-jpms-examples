@@ -10,8 +10,8 @@
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- Built from the JPMS branch of Flow by ../build-snapshots.sh -->
-    <flow.version>25.4-jpms-SNAPSHOT</flow.version>
+    <!-- Published beta: no locally built Vaadin artifacts required. -->
+    <flow.version>25.4.0-beta1</flow.version>
     <jetty.version>12.1.14</jetty.version>
   </properties>
 
