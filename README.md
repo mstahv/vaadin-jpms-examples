@@ -54,7 +54,53 @@ explicit descriptors and runtime fixes of `feature/jpms`:
 - Quarkus can build and run the published extension in these tests without rebuilding it against Quarkus 4.
   This does not resolve its jlink resource and module-access problems.
 
-Run the beta examples (one at a time, since they default to port 8080):
+### Recommended next steps for the Vaadin team
+
+Prioritize the remaining module-name changes: they offer the best return for the remaining work. The PRs already
+exist, the changes are small manifest additions, and they give build tools stable identities without introducing
+the exports, opens and service declarations of full module descriptors. The beta tests above show that publishing
+the names already makes useful module-path applications possible.
+
+**1. Finish and release the module-name PRs, starting with Atmosphere.**
+
+| Artifact | Existing PR | Follow-through |
+|---|---|---|
+| Vaadin's Atmosphere fork | [vaadin/atmosphere#19](https://github.com/vaadin/atmosphere/pull/19) — `com.vaadin.external.atmosphere.runtime` | Release the fork and update Flow's dependency. On the descriptor branch, also change `requires atmosphere.runtime` to the declared name. |
+| Browser-opening helper | [vaadin/open#19](https://github.com/vaadin/open/pull/19) — `com.vaadin.open` | Release it and update consumers such as the license checker to use that release and module name. |
+| License checker | [vaadin/license-checker-vaadin10#268](https://github.com/vaadin/license-checker-vaadin10/pull/268) (private) — `com.vaadin.pro.licensechecker` | Review and release the existing change, then update the Vaadin dependencies that bring it in. |
+
+The Atmosphere and Open PRs were still open when checked on 2026-11-18. Atmosphere is directly relevant to this
+experiment: the beta still uses a fork without `Automatic-Module-Name`, and the original snapshot experiments
+needed a locally built fork to use its intended module name. Open and license-checker are follow-up targets from the existing PR
+list; their module-path behavior is not covered by the beta browser tests above.
+
+Merging is only the first step: the names need to reach published jars and then the versions Vaadin actually
+consumes. Verify each released jar with `jar --describe-module`, including after renaming the jar, and rerun the
+affected examples against the released dependency. This removes filename-dependent identities and the associated
+aliases or class-path fallback. It does not by itself make automatic modules directly linkable with `jlink` or fix
+the Quarkus push-resource failure.
+
+**2. Extract the small runtime fixes from `feature/jpms`, with regression tests.** The default `03-vidocq` package
+reproduces `Unable to find index.html`: application resources must be found through the servlet context's class
+loader when Flow lives in a parent layer. The jlink example reproduces the dynamic service-lookup failure when
+creating `AppShell`: `com.vaadin.flow.server does not declare uses`. The snapshot experiments have working fixes
+for both. Success means the package works without `vidocq.app.layer=all`, and the image can create the app shell
+and serve the view. These are useful separate changes while the descriptor work continues.
+
+**3. Continue with explicit Flow module descriptors.** Stable names establish the identities; descriptors supply
+the dependency graph, encapsulation and service declarations. Use Jetty and Jenesis to check that Flow brings its
+required modules into the graph without application workarounds for Jackson and jsoup. Use Vidocq to check that
+Flow no longer needs generated descriptors for jlink; components and other automatic dependencies may still need
+them. Keep the `java.desktop` reduction as a separate image-size check, as described in finding 8 below.
+
+**4. Track the Quarkus failures with focused upstream reproductions.** CR1 still rejects `META-INF/VAADIN` as a
+package name, needs the module-access adjustments in `04-quarkus/patch-image.sh`, and returns 404 for the push
+script. Separate the resource/package and Undertow access problems from Atmosphere's missing `jakarta.annotation`
+read edge. Each reproduction should identify which patch becomes unnecessary when the corresponding fix lands.
+
+### Run the beta examples
+
+Run one at a time, since they default to port 8080:
 
 ```sh
 01-jetty/run.sh
