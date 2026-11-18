@@ -14,7 +14,7 @@
     <!-- Built from the JPMS branch of Flow by ../build-snapshots.sh. vaadin-quarkus
          is built against Quarkus 4 by the same script, see README.md -->
     <flow.version>25.4-jpms-SNAPSHOT</flow.version>
-    <quarkus.version>4.0.0.Beta2</quarkus.version>
+    <quarkus.version>4.0.0.CR1</quarkus.version>
   </properties>
 
   <dependencyManagement>

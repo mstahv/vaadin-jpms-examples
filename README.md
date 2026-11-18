@@ -9,7 +9,10 @@ and runs from the module path, built in a different way:
 | [`01-jetty`](01-jetty) | Maven | embedded Jetty, plain `java -p … -m …` |
 | [`02-jenesis`](02-jenesis) | [Jenesis](https://jenesis.build/), with `module-info.java` as the only build description and the frontend built by [`jenesis-vaadin-plugin`](jenesis-vaadin-plugin) | embedded Jetty |
 | [`03-vidocq`](03-vidocq) | Maven, a branch of [VidocqTools/vaadin-on-vidocq](https://codefloe.com/VidocqTools/vaadin-on-vidocq), as a Git submodule | the [Vidocq](https://vidocq.dev) runtime, also as a `jlink` image |
-| [`04-quarkus`](04-quarkus) | Maven, Quarkus 4.0.0.Beta2 with `quarkus-jlink` | Quarkus as a `jlink` image, which does not work yet without patches |
+| [`04-quarkus`](04-quarkus) | Maven, Quarkus 4.0.0.CR1 with `quarkus-jlink` | Quarkus as a `jlink` image, which does not work yet without patches |
+
+Quarkus CR1 was checked on 2026-11-18: the fast-jar works with push; the jlink image still needs the patches
+and its push script still returns 404. See the [CR1 results](04-quarkus/README.md#quarkus-400cr1-check).
 
 They use Vaadin built from these branches, which are not released:
 

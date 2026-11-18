@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Patches the module descriptors (module.xml) of the jlink image that
-# Quarkus 4.0.0.Beta2 builds, so that the Vaadin application starts. Each patch
+# Quarkus 4.0.0.CR1 builds, so that the Vaadin application starts. Each patch
 # is a problem to solve in Quarkus or in Vaadin, see README.md.
 #
 # Run after mvn package, before starting the image.
