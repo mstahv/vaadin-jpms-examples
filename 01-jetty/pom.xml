@@ -11,6 +11,8 @@
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Published beta: no locally built Vaadin artifacts required. -->
+    <vaadin.version>25.4.0-beta2</vaadin.version>
+    <!-- Platform beta2 still uses Flow beta1. -->
     <flow.version>25.4.0-beta1</flow.version>
     <jetty.version>12.1.14</jetty.version>
   </properties>
@@ -19,8 +21,8 @@
     <dependencies>
       <dependency>
         <groupId>com.vaadin</groupId>
-        <artifactId>flow-bom</artifactId>
-        <version>${flow.version}</version>
+        <artifactId>vaadin-bom</artifactId>
+        <version>${vaadin.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -96,4 +98,19 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <!-- The named Atmosphere release is not selected by platform beta2 yet. -->
+    <profile>
+      <id>atmosphere-jpms</id>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>com.vaadin.external.atmosphere</groupId>
+            <artifactId>atmosphere-runtime</artifactId>
+            <version>3.0.5.slf4jvaadin2</version>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+    </profile>
+  </profiles>
 </project>

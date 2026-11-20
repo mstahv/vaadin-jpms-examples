@@ -18,9 +18,23 @@
     <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Published beta: no locally built Vaadin artifacts required. -->
+    <vaadin.version>25.4.0-beta2</vaadin.version>
+    <!-- Platform beta2 still uses Flow beta1. -->
     <flow.version>25.4.0-beta1</flow.version>
     <jenesis.version>0.18.1</jenesis.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-bom</artifactId>
+        <version>${vaadin.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!-- Not provided: Jenesis calls a plugin through the copy of its API in

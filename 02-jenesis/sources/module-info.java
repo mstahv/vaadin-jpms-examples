@@ -3,19 +3,16 @@
  * description. Jenesis resolves each module it requires to a Maven artifact,
  * and the Vaadin plugin of jenesis.plugins.properties builds the frontend.
  * <p>
- * Pins select the published beta rather than the newest indexed release.
+ * The platform BOM selects component beta2 and Flow beta1 as released.
  * Keep aliases so resolution does not depend on the Module Index having
  * indexed this beta yet. Only the local build plugin uses a SNAPSHOT.
  *
+ * @jenesis.bom com.vaadin/vaadin-bom 25.4.0-beta2
  * @jenesis.main com.example.jpms.jenesis.Main
  * @jenesis.alias com.vaadin.flow.server com.vaadin/flow-server
  * @jenesis.alias com.vaadin.flow.component.html com.vaadin/flow-html-components
  * @jenesis.alias com.vaadin.flow.component.react com.vaadin/flow-react
  * @jenesis.alias com.vaadin.flow.component.button com.vaadin/vaadin-button-flow
- * @jenesis.pin com.vaadin.flow.server 25.4.0-beta1
- * @jenesis.pin com.vaadin.flow.component.html 25.4.0-beta1
- * @jenesis.pin com.vaadin.flow.component.react 25.4.0-beta1
- * @jenesis.pin com.vaadin.flow.component.button 25.4.0-beta1
  * @jenesis.pin tools.jackson.databind 3.1.8
  * @jenesis.pin plugin.vaadin/maven/com.example.jpms/jenesis-vaadin-plugin 1.0-SNAPSHOT
  * @jenesis.pin main/maven/org.slf4j/slf4j-api 2.0.20

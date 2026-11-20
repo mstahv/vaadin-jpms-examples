@@ -9,13 +9,19 @@ the application modules it needs. Quarkus 4 is to make this packaging first clas
 module descriptors Quarkus generated, and push still fails then. Each patch is a problem to solve, in Quarkus or in
 Vaadin, and they are listed below. As a fast-jar, the same application works on Quarkus 4.0.0.CR1.
 
-## Published beta: 25.4.0-beta1
+## Published platform beta: 25.4.0-beta2
 
-This branch uses the published Flow and vaadin-quarkus artifacts. Checked on 2026-11-18 with JDK 25 and the
-same Quarkus 4.0.0.Beta2: `mvn clean package` builds both the image and the fast-jar without locally rebuilding
-vaadin-quarkus. The image still fails on `META-INF.VAADIN.config: Invalid package name`. The existing
-`patch-image.sh` lets it start, but `VAADIN/static/push/vaadinPush-min.js` still returns 404 and the browser view
-stays blank. The fast-jar passes browser server-round-trip and long-polling push checks.
+This branch imports `vaadin-bom:25.4.0-beta2`, which still selects Flow and vaadin-quarkus `25.4.0-beta1`.
+Checked again on 2026-11-20 with JDK 25 and Quarkus 4.0.0.CR1: `mvn clean package` builds both the image and the
+fast-jar without locally rebuilding vaadin-quarkus. The fast-jar passes browser server-round-trip and long-polling
+push checks. The unpatched image still fails on `META-INF.VAADIN.config: Invalid package name`.
+`patch-image.sh` lets it serve the index with HTTP 200, but `VAADIN/static/push/vaadinPush-min.js` returns 404.
+
+Platform beta2 still resolves Atmosphere `3.0.5.slf4jvaadin1`. The optional `-Patmosphere-jpms` profile selects
+released `3.0.5.slf4jvaadin2`, which declares `com.vaadin.external.atmosphere.runtime`. It removes Quarkus's warning
+about computing Atmosphere's module name, but repeats the same unpatched startup error and patched push-resource
+404. Flow also warns that its expected Atmosphere version differs. The profile is an explicit experiment beyond
+the platform's default dependencies; it does not provide working jlink support.
 
 The beta's Vaadin jars declare automatic module names, not explicit descriptors. The description of explicit
 Flow modules below records the earlier `feature/jpms` experiment; it does not describe the published beta.
@@ -33,11 +39,11 @@ still returns 404. The Beta2 findings below remain relevant; CR1 does not remove
 
 ## Run it
 
-Requirements: JDK 25 (`quarkus-jlink` needs it) and Maven. The POM selects published Vaadin `25.4.0-beta1`;
+Requirements: JDK 25 (`quarkus-jlink` needs it) and Maven. The POM selects platform `25.4.0-beta2`;
 `build-snapshots.sh` is not needed.
 
 ```sh
-mvn package                        # builds the frontend and the image, target/jlink-output/image
+mvn clean package                  # builds the frontend and the image, target/jlink-output/image
 ./patch-image.sh                   # patches the module descriptors of the image
 target/jlink-output/image/bin/jpms-example-quarkus-1.0-SNAPSHOT
 ```
@@ -51,6 +57,10 @@ The fast-jar for comparison, which works with push:
 mvn package
 java -jar target/quarkus-app/quarkus-run.jar
 ```
+
+To try the named Atmosphere release, build with `mvn -Patmosphere-jpms clean package`, then run the patch script
+and image as above. Clean when switching profiles. See the [beta2 findings](../README.md#what-changed-since-beta1)
+for the dependency versions, the Jetty/Jenesis push checks and the remaining release adoption work.
 
 ## Original snapshot findings
 

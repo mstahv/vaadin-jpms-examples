@@ -11,92 +11,106 @@ and runs from the module path, built in a different way:
 | [`03-vidocq`](03-vidocq) | Maven, a branch of [VidocqTools/vaadin-on-vidocq](https://codefloe.com/VidocqTools/vaadin-on-vidocq), as a Git submodule | the [Vidocq](https://vidocq.dev) runtime, also as a `jlink` image |
 | [`04-quarkus`](04-quarkus) | Maven, Quarkus 4.0.0.CR1 with `quarkus-jlink` | Quarkus as a `jlink` image, which does not work yet without patches |
 
-Quarkus CR1 was checked on 2026-11-18: the fast-jar works with push; the jlink image still needs the patches
-and its push script still returns 404. See the [CR1 results](04-quarkus/README.md#quarkus-400cr1-check).
+Quarkus CR1 was checked again with platform beta2 on 2026-11-20: the fast-jar works with push; the jlink image still needs the patches
+and its push script still returns 404. See the [Quarkus results](04-quarkus/README.md#published-platform-beta-2540-beta2).
 
-## Published beta experiment: 25.4.0-beta1
+## Published beta experiment: 25.4.0-beta2
 
-This branch uses **25.4.0-beta1 from Maven Central**, without running `build-snapshots.sh`.
-The Jetty, Jenesis plugin and Quarkus POMs, and the Jenesis module pins, select that version.
-`03-vidocq` remains an unchanged Git submodule: [`vidocq-mvn.sh`](vidocq-mvn.sh) passes
-`-Dflow.version=25.4.0-beta1` to its Maven build. The application/plugin versions and Vidocq itself still use
-SNAPSHOT versions; no Vaadin JPMS snapshot is needed.
+This branch, `test/vaadin-25.4.0-beta2`, builds on the beta1 experiment and imports **Vaadin platform
+25.4.0-beta2 from Maven Central**, without running `build-snapshots.sh`. The platform BOM selects **Flow and
+vaadin-quarkus 25.4.0-beta1**, and **Flow Components 25.4.0-beta2**. There is no `flow-server:25.4.0-beta2` release;
+setting every artifact to beta2 would fail. The Flow frontend plugin and the Jenesis plugin's Flow API therefore
+stay at beta1 too. See the [platform release](https://github.com/vaadin/platform/releases/tag/25.4.0-beta2).
 
-Checked on 2026-11-18 with JDK 25, Maven 3.10.0 and Chromium. Jetty is still 12.1.14, Quarkus is now
-4.0.0.CR1, and the Vidocq submodule is at `29f6b083848e7999313bc033afe5b86bb61a7e05`.
+The Maven examples and the Jenesis module descriptor import `vaadin-bom:25.4.0-beta2`. `03-vidocq` remains an
+unchanged Git submodule: [`vidocq-mvn.sh`](vidocq-mvn.sh) creates a temporary POM beside its original, imports the
+platform BOM, and separates the component and Flow versions. It requires Python 3 and removes that POM on exit.
+Application/plugin versions and Vidocq itself still use SNAPSHOT versions; no Vaadin JPMS snapshot is needed.
+
+Checked on 2026-11-20 with JDK 25, Maven 3.10.0 and Chromium. Jetty remains 12.1.14, Quarkus remains 4.0.0.CR1,
+and the Vidocq submodule remains at `29f6b083848e7999313bc033afe5b86bb61a7e05` for comparison with beta1.
 
 | Example | Build | Runtime result with the beta |
 |---|---|---|
-| `01-jetty` | Pass, after adding Jackson and jsoup requirements | Browser view, server round trip and long-polling push pass |
-| `02-jenesis` | Pass, after requiring and pinning Jackson | Browser view, server round trip, push and Vaadin Button pass |
+| `01-jetty` | Pass, retaining the beta1 Jackson and jsoup requirements | Browser view, server round trip and long-polling push pass |
+| `02-jenesis` | Pass, retaining the beta1 Jackson requirement and pin | Browser view, server round trip, push and Vaadin Button pass |
 | `03-vidocq` package | Pass | Default layering returns HTTP 500: `Unable to find index.html`; building with `-Dvidocq.app.layer=all` restores the browser view and server round trip |
 | `03-vidocq` jlink | Pass, Vauban generates descriptors for Flow too | Starts, but requesting the view fails: `AppShell: module com.vaadin.flow.server does not declare uses` |
 | `04-quarkus` jlink | Pass with the published extension | Unpatched image fails on `META-INF.VAADIN.config: Invalid package name`; existing `patch-image.sh` lets it start, but the push script still returns 404 and the view stays blank |
 | `04-quarkus` fast-jar | Pass | Browser view, server round trip and push pass, on the class path |
 
-The useful improvement is **stable published module names**. The tested Flow jars, component jars and
-`vaadin-quarkus` have `Automatic-Module-Name`, matching the names used by these examples. They have no
-`module-info.class`: Jetty and Jenesis show the application as explicit and Flow as automatic. The beta still
-uses Atmosphere `3.0.5.slf4jvaadin1`, without a declared module name.
+### What changed since beta1
 
-That is enough to run the two Jetty applications using released Vaadin artifacts. It does not replace the
-explicit descriptors and runtime fixes of `feature/jpms`:
+Published module names and the versions actually consumed by the platform are separate steps. Maven dependency
+resolution and inspection of the released jars gave these results:
 
-- `01-jetty` needs `requires tools.jackson.databind` to compile its diagnostic view, and `requires org.jsoup`
-  to start. Automatic Flow does not bring those explicit modules into the graph through transitive requirements.
-- `02-jenesis` also needs the Jackson requirement, pinned to Flow's `3.1.8` to avoid resolving both it and the
-  index's newer Jackson. Jenesis already launches with `--add-modules ALL-MODULE-PATH,ALL-DEFAULT`.
-  The local frontend plugin builds unchanged against the beta. Aliases are retained to avoid depending on when
-  the module index indexes the beta.
-- The separate-layer resource lookup and dynamic service lookup fixes are still missing in the tested Vidocq
-  paths. The ordinary package works with the old `vidocq.app.layer=all` build setting. Its jlink image still
-  includes `java.desktop`, `java.prefs` and `java.datatransfer`.
-- Quarkus can build and run the published extension in these tests without rebuilding it against Quarkus 4.
-  This does not resolve its jlink resource and module-access problems.
+| Artifact | Platform beta2 selects | Published JPMS improvement and remaining work |
+|---|---|---|
+| Flow / vaadin-quarkus | `25.4.0-beta1` | Same jars as before: automatic names, no explicit descriptors or new class-loader fixes. |
+| Flow Components | `25.4.0-beta2` | Component builds and browser tests pass with the existing automatic module names. |
+| `license-checker` | `3.1.5` (beta1 selected `3.1.4`) | Now declares `com.vaadin.pro.licensechecker`. This improvement has reached the platform BOM. |
+| Vaadin's Atmosphere fork | `3.0.5.slf4jvaadin1` | Released `3.0.5.slf4jvaadin2` declares `com.vaadin.external.atmosphere.runtime`, but Flow's dependency still selects the previous release. |
+| `open`, via license-checker | `8.5.0.5` | Released `8.5.0.6` declares `com.vaadin.open`, but license-checker 3.1.5 still depends on 8.5.0.5. |
+| Platform jars | `25.4.0-beta2` | `vaadin-core`, `vaadin-core-internal`, `vaadin-core-components` and `vaadin` declare `com.vaadin.core`, `com.vaadin.core.internal`, `com.vaadin.core.components` and `com.vaadin.platform`. Inspection of the beta1 jars found the same names already there. |
+
+The new Atmosphere, Open and license-checker jars, and the four platform jars, keep their declared names when the
+jar file is renamed. They are still automatic modules. The platform and license-checker entries were checked by
+artifact inspection and dependency resolution; the minimal application examples do not exercise commercial
+component licensing or the full platform dependency graph.
+
+**The separately released Atmosphere update works in the Jetty examples.** With the explicit override to
+`3.0.5.slf4jvaadin2`, both Jetty and Jenesis pass browser round-trip and long-polling push checks, and Jenesis also
+passes the Vaadin Button check. Its launch arguments now put Atmosphere on the module path as
+`com.vaadin.external.atmosphere.runtime`; with the platform default it falls back to the class path. Flow logs a
+version-mismatch warning because its expected Atmosphere version is still `3.0.5.slf4jvaadin1`.
+
+Quarkus's image still fails on the invalid `META-INF` package with either Atmosphere release. The existing patch
+script lets both images start and serve the index, but the push script still returns 404. The default fast-jar
+passes browser round-trip and push checks. Updating the fork's module name does not resolve the resource lookup
+or module-access problems of the image.
+
+The other beta1 findings remain reproducible:
+
+- Jetty needs `requires tools.jackson.databind` and `requires org.jsoup`; Jenesis needs the Jackson requirement
+  and its `3.1.8` pin. Flow still has no transitive module requirements. Jenesis launches with
+  `--add-modules ALL-MODULE-PATH,ALL-DEFAULT`.
+- Vidocq's default package returns HTTP 500 for missing `index.html`. Building with `vidocq.app.layer=all` restores
+  the view and server round trip with the beta2 components.
+- Vidocq's jlink image builds, but requesting the view fails during AppShell service lookup because Flow does not
+  declare `uses` for it. The image still contains `java.desktop`, `java.prefs` and `java.datatransfer`.
 
 ### Recommended next steps for the Vaadin team
 
-Prioritize the remaining module-name changes: they offer the best return for the remaining work. The PRs already
-exist, the changes are small manifest additions, and they give build tools stable identities without introducing
-the exports, opens and service declarations of full module descriptors. The beta tests above show that publishing
-the names already makes useful module-path applications possible.
+**1. Finish adopting the published module names.** This remains the best return for the remaining work: the
+Atmosphere and Open PRs have been merged and named artifacts are available, so the immediate task is updating
+consumers. The license-checker name is already included through the platform beta2 BOM.
 
-**1. Finish and release the module-name PRs, starting with Atmosphere.**
+| Existing PR | Status and next action |
+|---|---|
+| [vaadin/atmosphere#19](https://github.com/vaadin/atmosphere/pull/19) | Merged; name present in `3.0.5.slf4jvaadin2`. Update Flow's dependency and expected version, then rerun push tests. On the explicit-descriptor branch, use `requires com.vaadin.external.atmosphere.runtime`. |
+| [vaadin/open#19](https://github.com/vaadin/open/pull/19) | Merged; name present in `8.5.0.6`. Update license-checker's dependency from `8.5.0.5`, release it and adopt that version in the platform. |
+| [vaadin/license-checker-vaadin10#268](https://github.com/vaadin/license-checker-vaadin10/pull/268) (private) | Named `3.1.5` artifact is selected by platform beta2. Add module-path coverage involving a commercial component; that path is not covered by these minimal examples. |
 
-| Artifact | Existing PR | Follow-through |
-|---|---|---|
-| Vaadin's Atmosphere fork | [vaadin/atmosphere#19](https://github.com/vaadin/atmosphere/pull/19) — `com.vaadin.external.atmosphere.runtime` | Release the fork and update Flow's dependency. On the descriptor branch, also change `requires atmosphere.runtime` to the declared name. |
-| Browser-opening helper | [vaadin/open#19](https://github.com/vaadin/open/pull/19) — `com.vaadin.open` | Release it and update consumers such as the license checker to use that release and module name. |
-| License checker | [vaadin/license-checker-vaadin10#268](https://github.com/vaadin/license-checker-vaadin10/pull/268) (private) — `com.vaadin.pro.licensechecker` | Review and release the existing change, then update the Vaadin dependencies that bring it in. |
+For future updates, check both the manifest and the resolved dependency tree. A merged PR or a release by itself
+does not change the artifact used by an application. Keep renamed-jar checks so module identities remain
+independent of a tool's artifact naming convention.
 
-The Atmosphere and Open PRs were still open when checked on 2026-11-18. Atmosphere is directly relevant to this
-experiment: the beta still uses a fork without `Automatic-Module-Name`, and the original snapshot experiments
-needed a locally built fork to use its intended module name. Open and license-checker are follow-up targets from the existing PR
-list; their module-path behavior is not covered by the beta browser tests above.
+**2. Extract the runtime fixes from `feature/jpms`, with regression tests.** The default Vidocq package reproduces
+`Unable to find index.html`: resources must be found through the servlet context's class loader when Flow lives in
+a parent layer. The jlink example reproduces the dynamic service-lookup failure when creating AppShell. The
+snapshot experiments have working fixes for both. Success means the package works without `vidocq.app.layer=all`,
+and the image can create the app shell and serve the view. Platform beta2 still ships the same Flow binary, so
+these fixes have not arrived through this release.
 
-Merging is only the first step: the names need to reach published jars and then the versions Vaadin actually
-consumes. Verify each released jar with `jar --describe-module`, including after renaming the jar, and rerun the
-affected examples against the released dependency. This removes filename-dependent identities and the associated
-aliases or class-path fallback. It does not by itself make automatic modules directly linkable with `jlink` or fix
-the Quarkus push-resource failure.
-
-**2. Extract the small runtime fixes from `feature/jpms`, with regression tests.** The default `03-vidocq` package
-reproduces `Unable to find index.html`: application resources must be found through the servlet context's class
-loader when Flow lives in a parent layer. The jlink example reproduces the dynamic service-lookup failure when
-creating `AppShell`: `com.vaadin.flow.server does not declare uses`. The snapshot experiments have working fixes
-for both. Success means the package works without `vidocq.app.layer=all`, and the image can create the app shell
-and serve the view. These are useful separate changes while the descriptor work continues.
-
-**3. Continue with explicit Flow module descriptors.** Stable names establish the identities; descriptors supply
-the dependency graph, encapsulation and service declarations. Use Jetty and Jenesis to check that Flow brings its
-required modules into the graph without application workarounds for Jackson and jsoup. Use Vidocq to check that
-Flow no longer needs generated descriptors for jlink; components and other automatic dependencies may still need
-them. Keep the `java.desktop` reduction as a separate image-size check, as described in finding 8 below.
+**3. Continue with explicit Flow module descriptors.** Use Jetty and Jenesis to check that Flow brings its required
+modules into the graph without the application's Jackson and jsoup workarounds. Use Vidocq to check that Flow no
+longer needs generated descriptors for jlink; components and other automatic dependencies may still need them.
+Keep the `java.desktop` reduction as a separate image-size check, as described in finding 8 below.
 
 **4. Track the Quarkus failures with focused upstream reproductions.** CR1 still rejects `META-INF/VAADIN` as a
-package name, needs the module-access adjustments in `04-quarkus/patch-image.sh`, and returns 404 for the push
-script. Separate the resource/package and Undertow access problems from Atmosphere's missing `jakarta.annotation`
-read edge. Each reproduction should identify which patch becomes unnecessary when the corresponding fix lands.
+package name and the patched image still returns 404 for the push script. Keep the resource/package and Undertow
+access problems separate from Atmosphere's `jakarta.annotation` read edge. The named Atmosphere release makes no
+observable difference to the startup and resource failures tested here.
 
 ### Run the beta examples
 
@@ -127,10 +141,31 @@ JDK_JAVA_OPTIONS=-Dvaadin.productionMode=true 03-vidocq/target/dist/bin/vaadin-o
 (cd 04-quarkus && java -jar target/quarkus-app/quarkus-run.jar)
 ```
 
+### Try the separately released Atmosphere module name
+
+The default builds above use the platform's original Atmosphere dependency. The `atmosphere-jpms` Maven profile
+in `01-jetty` and `04-quarkus` opts into published `3.0.5.slf4jvaadin2` without a local snapshot:
+
+```sh
+01-jetty/run.sh -Patmosphere-jpms
+(cd 04-quarkus && mvn -Patmosphere-jpms clean package && ./patch-image.sh)
+```
+
+Use `clean` when switching dependency versions, so old jars do not remain on the module path. `01-jetty/run.sh`
+does this automatically. The Quarkus image still has the limitations above with this profile.
+
+For the equivalent Jenesis experiment, add this pin to the Javadoc of `02-jenesis/sources/module-info.java`, then
+run `java build/jenesis/Execute.java` as usual. Remove it to return to the platform default. Both variants were
+tested; this branch leaves the pin out by default.
+
+```java
+ * @jenesis.pin main/maven/com.vaadin.external.atmosphere/atmosphere-runtime 3.0.5.slf4jvaadin2
+```
+
 ## Original JPMS snapshot experiments
 
 The remaining sections record the original snapshot setup and its results, for comparison. They are not the
-setup instructions or results for this beta branch. Use the commands above for 25.4.0-beta1.
+setup instructions or results for this beta branch. Use the commands above for platform 25.4.0-beta2.
 
 The original experiments used Vaadin built from these branches:
 
